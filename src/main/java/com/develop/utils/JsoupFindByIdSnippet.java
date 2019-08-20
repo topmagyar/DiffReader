@@ -3,7 +3,6 @@ package com.develop.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,25 +13,9 @@ import org.slf4j.LoggerFactory;
 public class JsoupFindByIdSnippet {
 
     private static Logger LOGGER = LoggerFactory.getLogger(JsoupFindByIdSnippet.class);
-
     private static String CHARSET_NAME = "utf8";
 
-    public static void main(String[] args) {
-        String resourcePath = "./samples/startbootstrap-freelancer-gh-pages-cut.html";
-        String targetElementId = "sendMessageButton";
-
-        Optional<Element> buttonOpt = findElementById(new File(resourcePath), targetElementId);
-
-        Optional<String> stringifiedAttributesOpt = buttonOpt.map(button ->
-                button.attributes().asList().stream()
-                        .map(attr -> attr.getKey() + " = " + attr.getValue())
-                        .collect(Collectors.joining(", "))
-        );
-
-        stringifiedAttributesOpt.ifPresent(attrs -> LOGGER.info("Target element attrs: [{}]", attrs));
-    }
-
-    private static Optional<Element> findElementById(File htmlFile, String targetElementId) {
+    public Optional<Element> findElementById(File htmlFile, String targetElementId) {
         try {
             Document doc = Jsoup.parse(
                     htmlFile,

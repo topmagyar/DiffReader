@@ -19,44 +19,48 @@ public class JsoupCssSelectSnippet {
 
     private static String CHARSET_NAME = "utf8";
 
-    public static void main(String[] args) {
-
+//    public static void main(String[] args) {
+//
         // Jsoup requires an absolute file path to resolve possible relative paths in HTML,
         // so providing InputStream through classpath resources is not a case
-        String resourcePath = "./samples/startbootstrap-freelancer-gh-pages-cut.html";
+//        String resourcePath = "/Users/bobyk/sources/DiffReader/samples/smpl1.html";
+//
+//        String cssQuery = "a[class*=\"btn-success\"][href*=\"#ok\"]";
+//
+//        Optional<Elements> elementsOpt = findElementsByQuery(new File(resourcePath), cssQuery);
+////        elementsOpt
+//
+//        Optional<List<String>> elementsAttrsOpts = elementsOpt.map(buttons ->
+//                {
+//                    List<String> stringifiedAttrs = new ArrayList<>();
+//
+//                    buttons.iterator().forEachRemaining(button ->
+//                            stringifiedAttrs.add(
+//                                    button.attributes().asList().stream()
+//                                            .map(attr -> attr.getKey() + " = " + attr.getValue())
+//                                            .collect(Collectors.joining(", "))));
+//
+//                    return stringifiedAttrs;
+//                }
+//        );
+//
+//
+//        elementsAttrsOpts.ifPresent(attrsList ->
+//                attrsList.forEach(attrs ->
+//                        LOGGER.info("Target element attrs: [{}]", attrs)
+//                )
+//        );
+//    }
 
-        String cssQuery = "div[id=\"success\"] button[class*=\"btn-primary\"]";
-
-        Optional<Elements> elementsOpt = findElementsByQuery(new File(resourcePath), cssQuery);
-
-        Optional<List<String>> elementsAttrsOpts = elementsOpt.map(buttons ->
-                {
-                    List<String> stringifiedAttrs = new ArrayList<>();
-
-                    buttons.iterator().forEachRemaining(button ->
-                            stringifiedAttrs.add(
-                                    button.attributes().asList().stream()
-                                            .map(attr -> attr.getKey() + " = " + attr.getValue())
-                                            .collect(Collectors.joining(", "))));
-
-                    return stringifiedAttrs;
-                }
-        );
-
-
-        elementsAttrsOpts.ifPresent(attrsList ->
-                attrsList.forEach(attrs ->
-                        LOGGER.info("Target element attrs: [{}]", attrs)
-                )
-        );
-    }
-
-    private static Optional<Elements> findElementsByQuery(File htmlFile, String cssQuery) {
+    public Optional<Elements> findElementsByQuery(File htmlFile, String cssQuery) {
         try {
             Document doc = Jsoup.parse(
                     htmlFile,
                     CHARSET_NAME,
                     htmlFile.getAbsolutePath());
+
+//            Elements el = doc.getElementsByAttributeValue("href", "#ok");
+//            doc.getElementsByAttributeValueStarting()
 
             return Optional.of(doc.select(cssQuery));
 
