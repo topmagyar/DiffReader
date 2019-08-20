@@ -1,17 +1,14 @@
 package com.develop;
 
 import com.develop.utils.JsoupFindByIdSnippet;
+import com.develop.utils.Utils;
 import org.jsoup.nodes.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ElementFinder {
-
-    private static Logger LOGGER = LoggerFactory.getLogger(ElementFinder.class);
 
     private String originalFileName;
     private String elementId;
@@ -20,14 +17,14 @@ public class ElementFinder {
     private File originalFile;
     private Map<String, String> attrMap;
 
-    public ElementFinder(String[] args) {
+    public ElementFinder(String[] args) throws Exception {
         elementId = args[0];
         originalFileName = args[1];
         diffFileName = args[2];
         init();
     }
 
-    private void init() {
+    private void init() throws Exception {
         Optional<Element> originalElement = findOriginalElement();
         attrMap = findOriginalElementAttributes(originalElement);
         DiffQueryRunner diffQueryRunner = new DiffQueryRunner(attrMap);
@@ -46,8 +43,8 @@ public class ElementFinder {
                 }).get();
     }
 
-    private Optional<Element> findOriginalElement() {
-        originalFile = new File(originalFileName);
+    private Optional<Element> findOriginalElement() throws Exception {
+        originalFile = Utils.getFileByFilepath(originalFileName);
         return new JsoupFindByIdSnippet().findElementById(originalFile, elementId);
     }
 }

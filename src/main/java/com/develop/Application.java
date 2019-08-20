@@ -1,12 +1,8 @@
 package com.develop;
 
-import java.io.FileNotFoundException;
-
 public class Application {
 
-    public static void main(String[] args) throws FileNotFoundException {
-        ElementFinder elementFinder = new ElementFinder(args);
-//        elementFinder.findOriginalElementAttributes();
-//        elementFinder.findDiffElementByAttributes();
+    public static void main(String[] args) throws Exception {
+        new ElementFinder(args);
     }
 }

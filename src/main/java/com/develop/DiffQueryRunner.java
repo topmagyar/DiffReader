@@ -2,13 +2,12 @@ package com.develop;
 
 import com.develop.utils.CssQueryGenerator;
 import com.develop.utils.JsoupCssSelectSnippet;
+import com.develop.utils.Utils;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class DiffQueryRunner {
 
@@ -21,13 +20,14 @@ public class DiffQueryRunner {
         this.originalAttrMap = originalAttrMap;
     }
 
-    public void run(String filename) {
-        diffFile = new File(filename);
+    public void run(String filename) throws Exception {
+        diffFile = Utils.getFileByFilepath(filename);
         checkDiffFile();
     }
 
     private void checkDiffFile() {
         findSameElement();
+        //not good solution but I have not time for another ;(
         findElementByAttributes(Arrays.asList("id","class","onclick","href"));
         findElementByAttributes(Arrays.asList("class","onclick","href"));
         findElementByAttributes(Arrays.asList("class","onclick"));
@@ -45,10 +45,10 @@ public class DiffQueryRunner {
                 cssQueryGenerator.hasContainsElement(attr, originalAttrMap.get(attr));
             }
             String cssQuery = cssQueryGenerator.build();
-            List<Map<String, String>> result = runQuery(cssQuery);
+            Elements result = runQuery(cssQuery);
             if (result.size() > 0) {
-                for (Map<String, String> mp : result) {
-                    System.out.println(mp.toString());
+                for (Element element : result) {
+                    System.out.println(getElementPath(element));
                 }
                 found = true;
                 return;
@@ -63,10 +63,10 @@ public class DiffQueryRunner {
                 cssQueryGenerator.hasContainsElement(entry.getKey(), entry.getValue());
             }
             String cssQuery = cssQueryGenerator.build();
-            List<Map<String, String>> result = runQuery(cssQuery);
+            Elements result = runQuery(cssQuery);
             if (result.size() > 0) {
-                for (Map<String, String> mp : result) {
-                    System.out.println(mp.toString());
+                for (Element element : result) {
+                    System.out.println(getElementPath(element));
                 }
                 found = true;
                 return;
@@ -74,21 +74,26 @@ public class DiffQueryRunner {
         }
     }
 
-    public List<Map<String, String>> runQuery(String query) {
-        return new JsoupCssSelectSnippet()
-                .findElementsByQuery(diffFile, query)
-                .map(elements -> {
-                    List<Map<String, String>> result = new ArrayList<>();
-                    elements.iterator().forEachRemaining(element -> {
-                        Map<String, String> attr = element
-                                .attributes()
-                                .asList()
-                                .stream()
-                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                        result.add(attr);
-                    });
-                    return result;
-                }).get();
+    private String getElementPath(Element element) {
+        Stack<String> elementPath = new Stack<>();
+        while (!element.tag().getName().equals("html")) {
+            elementPath.push(element.tag().getName() + "[" + element.attributes() + "]");
+            element = element.parent();
+        }
+        elementPath.push("html");
+
+        StringBuilder output = new StringBuilder();
+        while (elementPath.size() > 0) {
+            output.append(elementPath.pop() + " > ");
+        }
+        return output.substring(0, output.lastIndexOf(">") - 1);
+    }
+
+    private Elements runQuery(String query) {
+        Elements elements = new JsoupCssSelectSnippet()
+                .findElementsByQuery(diffFile, query).get();
+
+        return elements;
     }
 
 }
