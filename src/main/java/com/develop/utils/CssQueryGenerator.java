@@ -1,43 +1,49 @@
-package com.develop;
+package com.develop.utils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CssQueryGenerator {
 
-    private String classAttribute;
-    private String onClickAttirbute;
-    private String hrefAttribute;
+    private List<String> params;
 
-    public CssQueryGenerator hasClassAttributeContains(String classAttribute) {
-        this.classAttribute = classAttribute;
+    private static final String containsElement = "=";
+    private static final String startWithElement = "^=";
+    private static final String endWithElement = "$=";
+
+
+    public CssQueryGenerator() {
+        params = new ArrayList();
+    }
+
+    public CssQueryGenerator hasContainsElement(String attributeName, String attributeValue) {
+        params.add(createQueryForElement(attributeName, attributeValue, containsElement));
         return this;
     }
 
-    public CssQueryGenerator hasHrefAttributeContains(String hrefAttribute) {
-        this.hrefAttribute = hrefAttribute;
+    public CssQueryGenerator hasElementStartWith(String attributeName, String attributeValue) {
+        params.add(createQueryForElement(attributeName, attributeValue, startWithElement));
         return this;
     }
 
-    public CssQueryGenerator hasOnClickAttirbuteStarted(String onClickAttirbute) {
-        this.onClickAttirbute = onClickAttirbute;
+    public CssQueryGenerator hasElementEndWith(String attributeName, String attributeValue) {
+        params.add(createQueryForElement(attributeName, attributeValue, endWithElement));
         return this;
     }
 
-    private String getClassAttributeQuery() {
-        return classAttribute == null ? "" : "[class*=\"" + classAttribute + "\"]";
-    }
-
-    private String getOnClickAttirbuteQuery() {
-        return onClickAttirbute == null ? "" : "[onclick^=\"" + onClickAttirbute + "\"]";
-    }
-
-    private String getHrefAttributeQuery() {
-        return hrefAttribute == null ? "" : "[href*=\"" + hrefAttribute + "\"]";
+    private String createQueryForElement(String attrName, String attrValue, String attrOption) {
+        return "[" +
+                attrName +
+                attrOption +
+                "\"" + attrValue + "\"]";
     }
 
     public String build() {
         StringBuilder resultQuery = new StringBuilder();
         resultQuery.append("a");
-        resultQuery.append(getClassAttributeQuery());
-        resultQuery.append(getHrefAttributeQuery());
+        for (String s : params) {
+            resultQuery.append(s);
+        }
         return resultQuery.toString();
     }
 }
