@@ -13,11 +13,14 @@ public class DiffQueryRunner {
 
     private Map<String, String> originalAttrMap;
     private File diffFile;
-    private List<Boolean> uses = new ArrayList<>();
-    private boolean found = false;
+    private List<String> uses = new ArrayList<>();
+    private List<String> attrNames;
+    private Element resultElement;
+    private int maxSameAttributesCount = 0;
 
     public DiffQueryRunner(Map<String, String> originalAttrMap) {
         this.originalAttrMap = originalAttrMap;
+        attrNames = new ArrayList<>(originalAttrMap.keySet());
     }
 
     public void run(String filename) throws Exception {
@@ -26,51 +29,36 @@ public class DiffQueryRunner {
     }
 
     private void checkDiffFile() {
-        findSameElement();
-        //not good solution but I have not time for another ;(
-        findElementByAttributes(Arrays.asList("id","class","onclick","href"));
-        findElementByAttributes(Arrays.asList("class","onclick","href"));
-        findElementByAttributes(Arrays.asList("class","onclick"));
-        findElementByAttributes(Arrays.asList("class","href"));
-        findElementByAttributes(Arrays.asList("href","onclick"));
-        findElementByAttributes(Arrays.asList("class"));
-        findElementByAttributes(Arrays.asList("onclick"));
-        findElementByAttributes(Arrays.asList("href"));
-    }
-
-    private void findElementByAttributes(List<String> attributes) {
-        if (!found) {
-            CssQueryGenerator cssQueryGenerator = new CssQueryGenerator();
-            for (String attr : attributes) {
-                cssQueryGenerator.hasContainsElement(attr, originalAttrMap.get(attr));
-            }
-            String cssQuery = cssQueryGenerator.build();
-            Elements result = runQuery(cssQuery);
-            if (result.size() > 0) {
-                for (Element element : result) {
-                    System.out.println(getElementPath(element));
-                }
-                found = true;
-                return;
-            }
+        binaryElementsUsage(0);
+        if (resultElement == null) {
+            System.out.println("Not found similar element");
+        } else {
+            System.out.println(getElementPath(resultElement));
         }
     }
 
-    private void findSameElement() {
-        if (!found) {
-            CssQueryGenerator cssQueryGenerator = new CssQueryGenerator();
-            for (Map.Entry<String, String> entry : originalAttrMap.entrySet()) {
-                cssQueryGenerator.hasContainsElement(entry.getKey(), entry.getValue());
-            }
-            String cssQuery = cssQueryGenerator.build();
-            Elements result = runQuery(cssQuery);
-            if (result.size() > 0) {
-                for (Element element : result) {
-                    System.out.println(getElementPath(element));
-                }
-                found = true;
-                return;
-            }
+    private void binaryElementsUsage(int pos) {
+        if (pos == attrNames.size()) {
+            findElementWithSelectedAttributes();
+            return;
+        }
+
+        uses.add(attrNames.get(pos));
+        binaryElementsUsage(pos + 1);
+        uses.remove(uses.get(uses.size() - 1));
+        binaryElementsUsage(pos + 1);
+    }
+
+    private void findElementWithSelectedAttributes() {
+        CssQueryGenerator cssQueryGenerator = new CssQueryGenerator();
+        for (String attr : uses) {
+            cssQueryGenerator.hasContainsElement(attr, originalAttrMap.get(attr));
+        }
+        String cssQuery = cssQueryGenerator.build();
+        Elements result = runQuery(cssQuery);
+        if (result.size() > 0 && uses.size() > maxSameAttributesCount) {
+            maxSameAttributesCount = uses.size();
+            resultElement = result.first();
         }
     }
 
@@ -82,11 +70,11 @@ public class DiffQueryRunner {
         }
         elementPath.push("html");
 
-        StringBuilder output = new StringBuilder();
+        StringBuilder outputBuilder = new StringBuilder();
         while (elementPath.size() > 0) {
-            output.append(elementPath.pop() + " > ");
+            outputBuilder.append(elementPath.pop() + " > ");
         }
-        return output.substring(0, output.lastIndexOf(">") - 1);
+        return outputBuilder.substring(0, outputBuilder.lastIndexOf(">") - 1);
     }
 
     private Elements runQuery(String query) {
